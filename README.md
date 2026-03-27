@@ -193,6 +193,7 @@ screenshots-yourusername/
 4. Select **📝 Submission** template
 5. Fill in:
    - Your name
+   - Email address (for badges and prize notifications)
    - GitHub username
    - PR number
    - T-shirt size (for winners only)
