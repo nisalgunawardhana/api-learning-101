@@ -117,12 +117,12 @@ Examples:
 After testing, document results:
 
 ```markdown
-## Test Execution: [Date]
+## Test Execution: 2026-05-18
 
 ### Environment
-- Base URL: http://localhost:3000
-- Postman Version: [version]
-- Node Version: [version]
+- Base URL: https://api-learning.nisalgunawarchana.com
+- Postman Version: 12.4.2
+- Node Version: v22.17.1
 
 ### Results
 
@@ -131,7 +131,16 @@ After testing, document results:
 | / | GET | 200 | 200 | ✅ | 01-root-endpoint.png |
 | /api/users | GET | 200 | 200 | ✅ | 02-get-all-users.png |
 | /api/users/:id | GET | 200 | 200 | ✅ | 03-get-user-by-id.png |
-| ... | ... | ... | ... | ... | ... |
+| /api/users/:id | GET | 404 | 404 | ✅ | 04-get-user-404.png |
+| /api/users | POST | 201 | 201 | ✅ | 05-create-user-success.png |
+| /api/users | POST | 422 | 422 | ✅ | 06-create-user-validation-error.png |
+| /api/users | POST | 409 | 409 | ✅ | 07-create-user-duplicate-email.png |
+| /api/users | POST | 400 | 400 | ✅ | 08-create-user-missing-fields.png |
+| /api/users/:id | PUT | 200 | 200 | ✅ | 09-update-user-success.png |
+| /api/users/:id | PUT | 404 | 404 | ✅ | 10-update-user-not-found.png |
+| /api/users/:id | PUT | 422 | 422 | ✅ | 11-update-user-validation.png |
+| /api/users/:id | DELETE | 200 | 200 | ✅ | 12-delete-user-success.png |
+| /api/users/:id | DELETE | 404 | 404 | ✅ | 13-delete-user-not-found.png |
 
 ### Issues Found
 - None / List any issues
