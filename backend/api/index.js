@@ -27,7 +27,7 @@ const readUsers = () => {
     }
     return usersCache;
   } catch (error) {
-    console.error('Error reading users:', error);
+    console.error('Error reading users:', error.message);
     // If file read fails, initialize with default data
     usersCache = [
       { id: 1, name: 'John Doe', email: 'john@example.com', age: 30, createdAt: new Date().toISOString() },
