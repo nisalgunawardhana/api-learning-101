@@ -1,0 +1,44 @@
+$kind: http-request
+description: Create a new user in the system
+url: "{{base_url}}/api/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Nisal Gunawardhana",
+      "email": "contact@nisalgunawardhana.com",
+      "age": 24
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("User created successfully", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.success).to.be.true;
+          pm.expect(jsonData).to.have.property('message');
+      });
+
+      pm.test("Response has user data", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.data).to.have.property('id');
+          pm.expect(jsonData.data).to.have.property('createdAt');
+      });
+
+      // Save user ID for later use
+      var jsonData = pm.response.json();
+      pm.environment.set("created_user_id", jsonData.data.id);
+    language: text/javascript
+  - type: beforeRequest
+    code: |-
+      // Generate random email to avoid conflicts
+      const randomEmail = "user" + Math.floor(Math.random() * 10000) + "@example.com";
+      pm.environment.set("random_email", randomEmail);
+    language: text/javascript
+order: 4000

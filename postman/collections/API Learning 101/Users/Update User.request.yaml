@@ -1,0 +1,33 @@
+$kind: http-request
+description: Update an existing user's information
+url: "{{base_url}}/api/users/{{created_user_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Updated User Name",
+      "email": "updated@example.com",
+      "age": 30
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("User updated successfully", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.success).to.be.true;
+          pm.expect(jsonData.message).to.include('updated');
+      });
+
+      pm.test("Response has updatedAt field", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.data).to.have.property('updatedAt');
+      });
+    language: text/javascript
+order: 6000

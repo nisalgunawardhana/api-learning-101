@@ -1,0 +1,24 @@
+$kind: http-request
+description: Get a specific user by their ID
+url: "{{base_url}}/api/users/1"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("User has required fields", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.data).to.have.property('id');
+          pm.expect(jsonData.data).to.have.property('name');
+          pm.expect(jsonData.data).to.have.property('email');
+      });
+
+      pm.test("Email format is valid", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.data.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+      });
+    language: text/javascript
+order: 2000

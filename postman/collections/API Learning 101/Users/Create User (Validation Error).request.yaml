@@ -1,0 +1,29 @@
+$kind: http-request
+description: Test validation error with invalid data
+url: "{{base_url}}/api/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Test User",
+      "email": "invalid-email",
+      "age": -5
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400 or 422", function () {
+          pm.expect(pm.response.code).to.be.oneOf([400, 422]);
+      });
+
+      pm.test("Error response has required fields", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.success).to.be.false;
+          pm.expect(jsonData).to.have.property('error');
+          pm.expect(jsonData).to.have.property('message');
+      });
+    language: text/javascript
+order: 5000

@@ -1,0 +1,18 @@
+$kind: http-request
+description: Delete a user from the system
+url: "{{base_url}}/api/users/{{created_user_id}}"
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("User deleted successfully", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.success).to.be.true;
+          pm.expect(jsonData.message).to.include('deleted');
+      });
+    language: text/javascript
+order: 7000

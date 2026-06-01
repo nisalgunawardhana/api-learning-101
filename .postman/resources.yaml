@@ -1,0 +1,8 @@
+workspace:
+  id: a61cf73f-c7ff-4dcb-89c4-a56fbfe36b6c
+localResources:
+  collections:
+    - ../postman/collections/API Learning 101
+cloudResources:
+  collections:
+    ../postman/collections/API Learning 101: 54248754-226766a5-96a7-45ed-8f10-2deb93e43d68

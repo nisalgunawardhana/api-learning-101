@@ -1,0 +1,18 @@
+$kind: http-request
+description: Test 404 error when user doesn't exist
+url: "{{base_url}}/api/users/9999"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 404", function () {
+          pm.response.to.have.status(404);
+      });
+
+      pm.test("Error message is present", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('error');
+          pm.expect(jsonData).to.have.property('message');
+      });
+    language: text/javascript
+order: 3000

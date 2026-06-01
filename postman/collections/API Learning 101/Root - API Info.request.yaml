@@ -1,0 +1,21 @@
+$kind: http-request
+description: Get API information including available endpoints and documentation
+url: "{{base_url}}/"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response has message", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('message');
+      });
+
+      pm.test("Response time is less than 500ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(500);
+      });
+    language: text/javascript
+order: 2000

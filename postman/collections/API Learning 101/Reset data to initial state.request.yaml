@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}/api/reset"
+method: GET
+order: 3000

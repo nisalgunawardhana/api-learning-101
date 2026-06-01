@@ -1,0 +1,29 @@
+$kind: http-request
+description: Retrieve all users from the system
+url: "{{base_url}}/api/users"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response has success property", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('success');
+          pm.expect(jsonData.success).to.be.true;
+      });
+
+      pm.test("Response has data array", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('data');
+          pm.expect(jsonData.data).to.be.an('array');
+      });
+
+      pm.test("Response has count", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('count');
+      });
+    language: text/javascript
+order: 1000
