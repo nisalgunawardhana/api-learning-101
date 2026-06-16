@@ -1,0 +1,75 @@
+name: PR Linked to Submission
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  check-submission-link:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: read
+      
+    steps:
+      - name: Check for Submission Issue Link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const prNumber = context.payload.pull_request.number;
+            
+            // Look for submission issue reference
+            const submissionRegex = /#(\d+)/g;
+            const matches = [...prBody.matchAll(submissionRegex)];
+            
+            if (matches.length > 0) {
+              // Found issue reference
+              const issueNumber = matches[0][1];
+              
+              try {
+                // Get the issue to check if it's a submission
+                const issue = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber
+                });
+                
+                const labels = issue.data.labels.map(l => l.name);
+                
+                if (labels.includes('submission')) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: [
+                      `✅ This PR is linked to submission issue #${issueNumber}.`,
+                      '',
+                      'Thank you for linking your submission! Your PR will be reviewed along with the submission issue.',
+                      '',
+                      '**Reviewer**: @nisalgunawardhana will review this PR as part of the submission process.'
+                    ].join('\n')
+                  });
+                }
+              } catch (error) {
+                console.log('Issue not found or error occurred:', error.message);
+              }
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: [
+                  '⚠️ **Missing Submission Link**',
+                  '',
+                  'This PR doesn\'t appear to be linked to a submission issue.',
+                  '',
+                  'If you\'re submitting work for review:',
+                  `1. Create a [Submission Issue](https://github.com/${context.repo.owner}/${context.repo.repo}/issues/new/choose)`,
+                  `2. Reference this PR number (#${prNumber}) in the submission form`,
+                  '3. Link the submission issue in this PR description',
+                  '',
+                  'Example: `Closes #123` or `Related to #123`'
+                ].join('\n')
+              });
+            }

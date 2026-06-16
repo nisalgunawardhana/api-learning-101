@@ -1,0 +1,315 @@
+name: Submission Handler
+
+on:
+  issues:
+    types: [opened, closed, labeled]
+
+jobs:
+  handle-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      
+    steps:
+      - name: Check if submission issue
+        id: check-submission
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+            const title = issue.title || '';
+            const body = issue.body || '';
+            
+            // Check if this is a submission issue by labels or title pattern
+            const isSubmission = labels.includes('submission') || 
+                                 title.includes('[SUBMISSION]') ||
+                                 body.includes('T-Shirt Size');
+            
+            console.log(`Labels: ${labels.join(', ')}`);
+            console.log(`Is submission: ${isSubmission}`);
+            
+            core.setOutput('is_submission', isSubmission.toString());
+          
+      - name: Handle New Submission
+        if: github.event.action == 'opened' && steps.check-submission.outputs.is_submission == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const submitter = context.payload.issue.user.login;
+            const issueNumber = context.issue.number;
+            const issueBody = context.payload.issue.body || '';
+            
+            const detectTshirtSize = (body) => {
+              if (!body) return null;
+              
+              // Prefer the line immediately following the issue form heading
+              const headerMatch = body.match(/###\s*T-?Shirt\s+Size[^\n]*\n+([^\n#]+)/i);
+              let rawSize = headerMatch && headerMatch[1] ? headerMatch[1].trim() : null;
+              
+              // Fallback to inline "T-Shirt Size: <value>" patterns
+              if (!rawSize) {
+                const inlineMatch = body.match(/T-?Shirt\s+Size[:\s]+([^\n]+)/i);
+                if (inlineMatch && inlineMatch[1]) {
+                  rawSize = inlineMatch[1].trim();
+                }
+              }
+              
+              if (!rawSize) return null;
+              
+              const normalized = rawSize.toUpperCase();
+              
+              if (normalized.includes('XXXL')) return 'T-Shirt: XXXL';
+              if (normalized.includes('XXL')) return 'T-Shirt: XXL';
+              if (normalized.includes('XL')) return 'T-Shirt: XL';
+              if (normalized.includes('XS')) return 'T-Shirt: XS';
+              if (normalized.startsWith('L') || normalized.includes('LARGE')) return 'T-Shirt: L';
+              if (normalized.startsWith('M') || normalized.includes('MEDIUM')) return 'T-Shirt: M';
+              if (normalized.startsWith('S') || normalized.includes('SMALL')) return 'T-Shirt: S';
+              
+              return null;
+            };
+            
+            const tshirtSize = detectTshirtSize(issueBody) || 'T-Shirt: Unknown';
+            const existingLabels = (context.payload.issue.labels || []).map(l => l.name);
+            const tshirtLabels = existingLabels.filter(name => /^t-?shirt:/i.test(name));
+            
+            for (const label of tshirtLabels) {
+              if (label !== tshirtSize) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    name: label
+                  });
+                } catch (error) {
+                  console.log(`Label ${label} could not be removed or was already missing`);
+                }
+              }
+            }
+            
+            console.log(`T-Shirt Size detected: ${tshirtSize}`);
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                '## 🎉 Task Submission Successfully Received!',
+                '',
+                `Thank you for completing the API Learning 101 testing task, @${submitter}!`,
+                '',
+                'Your submission has been successfully received and is now **pending review**.',
+                '',
+                '### 📋 Submission Details',
+                '',
+                `- **Submitter**: @${submitter}`,
+                `- **Issue**: #${issueNumber}`,
+                '- **Status**: 🟡 Pending Review',
+                '- **Assigned to**: @nisalgunawardhana',
+                '',
+                '### ⏭️ What\'s Next?',
+                '',
+                '1. ✅ Your submission has been automatically assigned to @nisalgunawardhana for review',
+                '2. 🔍 All 5 screenshots will be reviewed for completion and accuracy',
+                '3. 📧 You\'ll be notified once the review is complete',
+                '4. 🏆 Upon approval, you\'ll receive your **API Learning 101 Completion Badge**!',
+                '',
+                '### 📊 Review Criteria',
+                '',
+                'Your submission will be evaluated based on:',
+                '- ✓ All 5 API request types tested (GET all, GET one, POST, PUT, DELETE)',
+                '- ✓ Screenshots show successful responses with correct status codes',
+                '- ✓ All required fields visible in screenshots',
+                '- ✓ Proper documentation in Pull Request',
+                '',
+                '⏳ **Please be patient** - Reviews are typically completed within 2-3 business days.',
+                '',
+                'Thank you for your participation! 🎓'
+              ].join('\n')
+            });
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['submission', 'pending review', tshirtSize]
+            });
+            
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: ['nisalgunawardhana']
+            });
+            
+      - name: Handle Closed Submission
+        if: github.event.action == 'closed' && steps.check-submission.outputs.is_submission == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Check who closed the issue
+            const closedBy = context.payload.sender?.login || 'unknown';
+            const submitter = context.payload.issue.user.login;
+            const issueBody = context.payload.issue.body || '';
+            const issueNumber = context.issue.number;
+            
+            const detectTshirtSize = (body) => {
+              if (!body) return null;
+              
+              const headerMatch = body.match(/###\s*T-?Shirt\s+Size[^\n]*\n+([^\n#]+)/i);
+              let rawSize = headerMatch && headerMatch[1] ? headerMatch[1].trim() : null;
+              
+              if (!rawSize) {
+                const inlineMatch = body.match(/T-?Shirt\s+Size[:\s]+([^\n]+)/i);
+                if (inlineMatch && inlineMatch[1]) {
+                  rawSize = inlineMatch[1].trim();
+                }
+              }
+              
+              if (!rawSize) return null;
+              
+              const normalized = rawSize.toUpperCase();
+              
+              if (normalized.includes('XXXL')) return 'T-Shirt: XXXL';
+              if (normalized.includes('XXL')) return 'T-Shirt: XXL';
+              if (normalized.includes('XL')) return 'T-Shirt: XL';
+              if (normalized.includes('XS')) return 'T-Shirt: XS';
+              if (normalized.startsWith('L') || normalized.includes('LARGE')) return 'T-Shirt: L';
+              if (normalized.startsWith('M') || normalized.includes('MEDIUM')) return 'T-Shirt: M';
+              if (normalized.startsWith('S') || normalized.includes('SMALL')) return 'T-Shirt: S';
+              
+              return null;
+            };
+            
+            const tshirtSize = detectTshirtSize(issueBody) || 'T-Shirt: Unknown';
+            const existingLabels = (context.payload.issue.labels || []).map(l => l.name);
+            const tshirtLabels = existingLabels.filter(name => /^t-?shirt:/i.test(name));
+            
+            for (const label of tshirtLabels) {
+              if (label !== tshirtSize) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    name: label
+                  });
+                } catch (error) {
+                  console.log(`Label ${label} could not be removed or was already missing`);
+                }
+              }
+            }
+            
+            if (!tshirtLabels.includes(tshirtSize)) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                labels: [tshirtSize]
+              });
+            }
+            
+            console.log(`Issue closed by: ${closedBy}`);
+            
+            // Only process if closed by nisalgunawardhana
+            if (closedBy === 'nisalgunawardhana') {
+              // Remove pending review label
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: 'pending review'
+                });
+              } catch (error) {
+                console.log('Label already removed or does not exist');
+              }
+              
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['✅ approved', '🎓 completed']
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: [
+                  `## 🎊 Congratulations @${submitter}!`,
+                  '',
+                  'Your **API Learning 101** task submission has been **approved** by @nisalgunawardhana!',
+                  '',
+                  '### 🏆 Achievement Unlocked!',
+                  '',
+                  'You have successfully completed the API Learning 101 challenge and earned your badges:',
+                  '',
+                  '- ✅ **Submission Approved Badge**',
+                  '- 🎓 **API Learning 101 Completion Badge**',
+                  '',
+                  `![Completion Badge](https://raw.githubusercontent.com/${context.repo.owner}/${context.repo.repo}/main/images/badges/badge.png)`,
+                  '',
+                  '### 📊 Your Submission Summary',
+                  '',
+                  '- **All 5 API Tests**: ✅ Completed',
+                  '- **Screenshots**: ✅ Verified',
+                  '- **Status Codes**: ✅ Correct',
+                  '- **Documentation**: ✅ Proper',
+                  '',
+                  '### 🎁 Want to Win Swags?',
+                  '',
+                  '**Increase your chances to win:**',
+                  '1. 📱 Share your achievement on social media (Twitter/LinkedIn/Facebook)',
+                  '2. 🏷️ Tag **@NisalGunawardhana** and **@Postman**',
+                  '3. 🔖 Use hashtag **#APILearning101**',
+                  '4. 🎉 Winners will be randomly selected for exclusive t-shirts and Postman swags!',
+                  '',
+                  '### 🎉 What You\'ve Accomplished',
+                  '',
+                  'You\'ve demonstrated proficiency in:',
+                  '- ✓ RESTful API testing with Postman',
+                  '- ✓ Understanding HTTP methods (GET, POST, PUT, DELETE)',
+                  '- ✓ Validating API responses and status codes',
+                  '- ✓ Working with JSON data',
+                  '- ✓ API documentation and best practices',
+                  '',
+                  '### 🚀 Next Steps',
+                  '',
+                  '- Share your achievement on social media with #APILearning101 and tag @NisalGunawardhana & @Postman',
+                  '- Continue exploring advanced API concepts',
+                  '- Check out our other learning resources',
+                  '- Help others by reviewing their submissions',
+                  '',
+                  '### 🎁 T-Shirt & Swag Distribution',
+                  '',
+                  'Winners will be **randomly selected** from all approved submissions!',
+                  '',
+                  '- T-shirts will be sent to randomly selected winners',
+                  '- Your t-shirt size has been recorded',
+                  '- Share on social media tagging @NisalGunawardhana and @Postman for bonus chances!',
+                  '- Winners will be contacted separately for shipping details',
+                  '',
+                  '**Tip:** The more engagement your post gets, the better your chances! 🎯',
+                  '',
+                  '---',
+                  '',
+                  '**Thank you for completing API Learning 101!** Keep building amazing things! 🚀'
+                ].join('\n')
+              });
+              
+              console.log(`✅ Submission #${context.issue.number} approved for @${submitter}`);
+              console.log(`✅ Submission #${context.issue.number} approved for @${submitter}`);
+              console.log(`Badges assigned: ✅ Approved, 🎓 Completed`);
+            } else {
+              console.log(`Issue closed by ${closedBy}, not nisalgunawardhana. No badges assigned.`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `This submission was closed by @${closedBy}. For official review completion, the issue should be closed by @nisalgunawardhana.`
+              });
+            }

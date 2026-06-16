@@ -1,0 +1,76 @@
+name: 🐛 Bug Report
+description: Report a bug or issue
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        
+        Thanks for reporting a bug! Please provide as much detail as possible.
+        
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is
+      placeholder: "Describe the bug..."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: "I expected..."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: "But instead..."
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the project is affected?
+      options:
+        - Backend API
+        - Documentation
+        - Postman Collection
+        - GitHub Actions
+        - Other
+    validations:
+      required: true
+      
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add screenshots if applicable
+      
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information about the problem

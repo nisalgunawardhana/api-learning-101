@@ -1,0 +1,145 @@
+name: 📝 Task Submission
+description: Submit your completed API testing task with screenshots
+title: "[SUBMISSION] "
+labels: ["submission", "pending review"]
+assignees:
+  - nisalgunawardhana
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎉 Submit Your Completed API Testing Task!
+        
+        Thank you for completing the API Learning 101 testing task! Fill out this form to submit your work.
+        
+        **Requirements:**
+        - Complete all 5 API request tests (GET all, GET one, POST, PUT, DELETE)
+        - Take screenshots of each successful test
+        - Add screenshots to `docs/screenshots/` folder
+        - Create a Pull Request with your screenshots
+        
+        Your submission will be automatically assigned to @nisalgunawardhana for review!
+        
+  - type: input
+    id: submitter-name
+    attributes:
+      label: Your Full Name
+      description: Enter your full name
+      placeholder: "e.g., John Doe"
+    validations:
+      required: true
+      
+  - type: input
+    id: github-username
+    attributes:
+      label: GitHub Username
+      description: Your GitHub username (without @)
+      placeholder: "e.g., johndoe"
+    validations:
+      required: true
+      
+  - type: input
+    id: email
+    attributes:
+      label: Email Address
+      description: We'll contact you at this email for badges and prizes
+      placeholder: "e.g., john.doe@example.com"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: tshirt-size
+    attributes:
+      label: T-Shirt Size (For Random Winners)
+      description: "Select your t-shirt size. Winners will be randomly selected from all approved submissions. Share on social media tagging @NisalGunawardhana and @Postman for more chances!"
+      options:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+        - XXL
+        - XXXL
+    validations:
+      required: true
+      
+  - type: input
+    id: pr-number
+    attributes:
+      label: Pull Request Link
+      description: The PR Link where you added your screenshots
+      placeholder: "e.g., https://github.com/username/repo/pull/123"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: screenshot-checklist
+    attributes:
+      label: Screenshots Submitted
+      description: Confirm you have included all required screenshots
+      placeholder: |
+        ✅ 01-get-all-users.png
+        ✅ 02-get-single-user.png
+        ✅ 03-post-create-user.png
+        ✅ 04-put-update-user.png
+        ✅ 05-delete-user.png
+      value: |
+        - [ ] GET All Users - Screenshot showing successful fetch of all users
+        - [ ] GET Single User - Screenshot showing successful fetch of one user
+        - [ ] POST Create User - Screenshot showing successful user creation
+        - [ ] PUT Update User - Screenshot showing successful user update
+        - [ ] DELETE User - Screenshot showing successful user deletion
+    validations:
+      required: true
+      
+  - type: textarea
+    id: testing-notes
+    attributes:
+      label: Testing Notes (Optional)
+      description: Any observations or challenges you encountered during testing
+      placeholder: "Share your experience testing the API..."
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Final Confirmation
+      description: Please confirm you've completed all requirements
+      options:
+        - label: I have tested all 5 API request types successfully
+          required: true
+        - label: I have added all 5 screenshots to the docs/screenshots/ folder
+          required: true
+        - label: I have created a Pull Request with my screenshots
+          required: true
+        - label: All my screenshots show successful API responses with correct status codes
+          required: true
+        - label: I have followed the coding standards
+          required: true
+        - label: I have created a pull request
+          required: true
+        - label: My PR is linked to this submission
+          required: true
+          
+      
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: Additional Notes
+      description: Any other information you'd like to share
+      
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ### What happens next?
+        
+        1. ✅ Your submission will be automatically tagged with **"submission"** and **"pending review"** labels
+        2. 👤 It will be assigned to **@nisalgunawardhana** for review
+        3. 💬 You'll receive a confirmation comment
+        4. 🔍 Your work will be reviewed
+        5. 🏆 Upon approval, you'll receive a contributor badge!
+        
+        Thank you for contributing to API Learning 101! 🚀

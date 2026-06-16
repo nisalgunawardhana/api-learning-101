@@ -1,0 +1,30 @@
+{
+  "name": "api-learning-backend",
+  "version": "1.0.0",
+  "description": "RESTful API for learning purposes - CRUD operations with JSON file storage",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "nodemon api/index.js"
+  },
+  "keywords": [
+    "api",
+    "rest",
+    "express",
+    "learning",
+    "json",
+    "crud"
+  ],
+  "author": "Nisal Gunawardhana",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
